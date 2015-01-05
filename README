@@ -1,0 +1,28 @@
+Some fun projects for web development...
+
+First, we need an oscilloscope (HTML5 canvas rendering with a bit of brains.)
+
+Start with a graph, which can:
+	1) Render to arbitrary canvas
+	2) Automatic, labeled grid axes with human-legible units
+	3) Expects to receive data possibly in a TypedBuffer
+	4) May be able to optimize shifting data out and new data in
+	5) Show up to N adjustable labels on the X and Y axes and have events
+       on when the user tries to drag them? For trigger control primarily.
+
+Add control/filter functionality with the ability to synchronize to some characteristic of the input signal
+(that is, trigger capability, possibly after a filter of some kind?) and shift X axis by some configurable
+trigger value.
+
+Second, we want some audio processing. Need to be able to generate a signal and interpret it as audio;
+also need to be able to play audio from a file (HTML5 media element + input type="file"?)
+
+	- Web Audio API: ScriptProcessorNode event "onaudioprocess". Looks trivially easy to use. Woohoo!
+      But is this real-time only or can the audio be "played back" at top speed.
+
+This may need to be asm.js optimized - is this possible? Should think so...
+
+It'd be nice if after all that, you could do some wacky shit like have the background change colors in rhythm with the music.
+Might be achievable by triggering on RMS or some other silly thing.
+
+From there we can start doing some frequency shifting, FFTs, and other such nonsense. Should be entertaining.

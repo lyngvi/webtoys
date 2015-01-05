@@ -1,0 +1,30 @@
+body {
+	font-family: sans-serif;
+	font-size: small;
+	margin-left: auto;
+	margin-right: auto;
+    width: 1250px;
+	padding: 0px;
+	margin-top: 0px;
+}
+
+#main {
+	background-color: #F8F0E0;
+	position: relative;
+	padding-top: 5px;
+	padding-left: 5px;
+	padding-right: 5px;
+    border-left: 1px solid #E0E0E0;
+	border-right: 1px solid #E0E0E0;
+}
+
+h1 {
+	margin-top: 10px;
+	font-size: large;
+	padding-top: 5px;
+	border-top: 1px solid #a0a0a0;
+}
+
+*.disabled {
+	color: #a0a0a0;
+}
