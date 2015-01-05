@@ -10,9 +10,12 @@ window.addEventListener("load", function() {
 				span.classList.add("disabled");
 			}
 		}
+		// FIXME action it.
 	};
 	for (var k = 0; k < sourceRadios.length; ++k) {
 		document.getElementById(sourceRadios[k] + "Radio").addEventListener("change", radioChange, false);
 	}
 	radioChange();
+	var graph = Graph(document.getElementById("graph1"));
+	graph.draw();
 }, false);
