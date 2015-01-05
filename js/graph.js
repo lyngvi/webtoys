@@ -54,6 +54,7 @@ function Graph(root) {
 		draw: function() {
 			/* FIXME unimpl */
 			var ctx = self.canvas.getContext("2d");
+			var style = window.getComputedStyle(self.root, null);
 			ctx.fillStyle = "#ff0000";
 			ctx.fillRect(0, 0, self.canvas.width, self.canvas.height);
 			ctx.fillStyle = "#000000";
@@ -64,6 +65,7 @@ function Graph(root) {
 		}
 	};
 	root.appendChild(self.canvas);
+	root.classList.add("graph");
 	self.resize(self.root.offsetWidth, self.root.offsetHeight);
 	self.draw();
 	return self;
