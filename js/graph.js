@@ -105,24 +105,30 @@ function Graph(root) {
 				}
 			}
 
-			yMin = surroundingPowersOf10(yMin)[0];
-			yMax = surroundingPowersOf10(yMax)[1];
-
 			// Make up some numbers if we're insane
-			if (self.yLog) {
-				if (yMin <= 0)
-					yMin = 0.1;
-				if (yMax <= yMin)
-					yMax = 10.0;
-				yMin = Math.log(yMin);
-				yMax = Math.log(yMax);
-			} else {
-				// gotta graph something
-				if (yMin <= yMax) {
+			if (self.yMin == null) {
+				yMin = surroundingPowersOf10(yMin)[0];
+				if (self.yLog) {
+					if (yMin <= 0)
+						yMin = -1.0;
+					else
+						yMin = Math.log(yMin);
+				}
+			}
+
+			if (self.yMax == null) {
+				yMax = surroundingPowersOf10(yMax)[1];
+				if (self.yLog) {
+					if (yMax <= yMin)
+						yMax = yMin + 1;
+					else
+						yMax = Math.log(yMax);
+				} else if (yMax <= yMin) {
 					yMin -= 1;
 					yMax += 1;
 				}
 			}
+
 			return {
 				xMin: xMin,
 				xMax: xMax,
