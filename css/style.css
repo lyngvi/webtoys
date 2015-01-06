@@ -28,14 +28,3 @@ h1 {
 *.disabled {
 	color: #a0a0a0;
 }
-
-#graph1 {
-	width: 100%;
-	height: 100px;
-	margin-left: auto;
-	margin-right: auto;
-}
-
-*.graph {
-	/* properties for use by graph */
-}

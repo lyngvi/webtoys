@@ -1,0 +1,42 @@
+/* graph properties */
+
+.graph {
+}
+
+.graph > table {
+    margin: 0 auto;
+}
+
+.graph > div {
+	position: relative;
+}
+
+.graph canvas {
+	background-color: black;
+	color: white;
+}
+
+.graph .graph-container {
+	position: relative;
+    top: 0px;
+    left: 0px;
+    width: 1000px;
+    height: 100px;
+}
+
+.graph .graph-y-axis-label-wrapper {
+}
+
+.graph .graph-y-axis-label {
+	transform: rotate(-90deg);
+}
+
+.graph .graph-x-axis-label {
+    text-align: center;
+}
+
+.graph .graph-title {
+	font-size: medium;
+	text-align: center;
+	font-weight: bold;
+}
