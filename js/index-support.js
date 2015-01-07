@@ -52,4 +52,9 @@ window.addEventListener("load", function() {
 			graph1.toggleButton.setAttribute("value", "Start the Graph");
 		}
 	});
+
+	var colorPicker = document.getElementById('bgcolorator');
+	var setColor = function() { document.body.style.backgroundColor = colorPicker.value; };
+	colorPicker.addEventListener('change', setColor);
+	colorPicker.addEventListener('input', setColor);
 }, false);
