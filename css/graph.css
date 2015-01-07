@@ -40,3 +40,29 @@
 	text-align: center;
 	font-weight: bold;
 }
+
+.graph .graph-x-axis-min {
+	text-align: left;
+	font-size: smaller;
+	font-family: monospace;
+}
+
+.graph .graph-x-axis-max {
+    text-align: right;
+    font-size: smaller;
+    font-family: monospace;
+}
+
+.graph .graph-y-axis-min {
+    vertical-align: bottom;
+    text-align: right;
+    font-size: smaller;
+    font-family: monospace;
+}
+
+.graph .graph-y-axis-max {
+    vertical-align: top;
+    text-align: right;
+    font-size: smaller;
+    font-family: monospace;
+}

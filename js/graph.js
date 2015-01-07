@@ -204,10 +204,13 @@ function Graph(root) {
 		},
 
 		draw: function() {
-			/* FIXME unimpl */
 			var ctx = self.canvas.getContext("2d");
 			var style = window.getComputedStyle(self.canvas, null);
 			var extents = self.getExtents();
+			self.yMaxElement.innerHTML = extents.yMax;
+			self.yMinElement.innerHTML = extents.yMin;
+			self.xMaxElement.innerHTML = extents.xMax;
+			self.xMinElement.innerHTML = extents.xMin;
 
 			ctx.fillStyle = style.backgroundColor;
 			ctx.fillRect(0, 0, self.canvas.width, self.canvas.height);
@@ -227,26 +230,51 @@ function Graph(root) {
 			// title row
 			var tr = createAndLinkChild(tbody, 'tr');
 			var td = createAndLinkChild(tr, 'td');
-			td.colspan = 2;
+			td.setAttribute("colspan", 4);
 			self.titleElement = createAndLinkChild(td, 'div', 'graph-title');
 
 			// main body row
 			//   graph
 			tr = createAndLinkChild(tbody, 'tr');
 			td = createAndLinkChild(tr, 'td');
+			td.setAttribute("rowspan", 2);
+			td.setAttribute("colspan", 2);
 			self.graphContainer = createAndLinkChild(td, 'div', 'graph-container');
 			self.canvas = createAndLinkChild(self.graphContainer, 'canvas');
+
+			// y axis maximum
+			td = createAndLinkChild(tr, 'td', 'graph-y-axis-max');
+			self.yMaxElement = createAndLinkChild(td, 'div');
+
 			//   y axis label
 			td = createAndLinkChild(tr, 'td');
+			td.setAttribute("rowspan", 2);
 			div = createAndLinkChild(td, 'div', 'graph-y-axis-label-wrapper');
-			self.yLabelElement= createAndLinkChild(div, 'div', 'graph-y-axis-label');
+			self.yLabelElement = createAndLinkChild(div, 'div', 'graph-y-axis-label');
+
+			// y axis minimum
+			tr = createAndLinkChild(tbody, 'tr');
+			td = createAndLinkChild(tr, 'td', 'graph-y-axis-min');
+			self.yMinElement = createAndLinkChild(td, 'div');
+
+			// x axis scale
+			tr = createAndLinkChild(tbody, 'tr');
+			td = createAndLinkChild(tr, 'td', 'graph-x-axis-min');
+			self.xMinElement = createAndLinkChild(td, 'div');
+			td = createAndLinkChild(tr, 'td', 'graph-x-axis-max');
+			self.xMaxElement = createAndLinkChild(td, 'div');
+			td = createAndLinkChild(tr, 'td');
+			td.setAttribute("colspan", 2);
+			div = createAndLinkChild(td, 'div', 'graph-label-deadzone');
 
 			// x axis label
 			tr = createAndLinkChild(tbody, 'tr');
 			td = createAndLinkChild(tr, 'td');
+			td.setAttribute("colspan", 2);
 			self.xLabelElement = createAndLinkChild(td, 'div', 'graph-x-axis-label');
 			//  and dead-zone
 			td = createAndLinkChild(tr, 'td');
+			td.setAttribute("colspan", 2);
 			div = createAndLinkChild(td, 'div', 'graph-label-deadzone');
 
 			self.root.classList.add('graph');
