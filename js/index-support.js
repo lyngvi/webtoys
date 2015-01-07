@@ -1,4 +1,10 @@
 window.addEventListener("load", function() {
+	/* various elements we frequently need */
+	var audioEl = document.getElementById("audioEl");
+	var playButton = document.getElementById("playButton");
+	var fileEl = document.getElementById("fileInput");
+
+	/** Input selection crap */
 	var sourceRadios = [ "fileInput", "genInput" ];
 	var radioChange = function() {
 		for (var k = 0; k < sourceRadios.length; ++k) {
@@ -10,13 +16,63 @@ window.addEventListener("load", function() {
 				span.classList.add("disabled");
 			}
 		}
-		// FIXME action it.
 	};
 	for (var k = 0; k < sourceRadios.length; ++k) {
 		document.getElementById(sourceRadios[k] + "Radio").addEventListener("change", radioChange, false);
 	}
+
+	var setAudioSource = function() {
+		if (document.getElementById("fileInputRadio").checked) {
+			if (fileEl.files.length == 0) {
+				alert("Pick a file, dork.");
+				return;
+			}
+			var fr = new FileReader();
+			fr.addEventListener("load", function() { audioEl.src = fr.result; }, false);
+			fr.readAsDataURL(fileEl.files[0]);
+		} else if (document.getElementById("genInputRadio").checked) {
+			alert("Not yet implemented.");
+		}
+	};
+
+	fileEl.addEventListener("change", function() {
+		if (fileEl.files.length == 0)
+			return;
+		document.getElementById("fileInputRadio").checked = true;
+		if (audioEl.readyState != audioEl.HAVE_NOTHING) {
+			audioEl.pause();
+			audioEl.currentTime = 0;
+		}
+		radioChange();
+		setAudioSource();
+	}, false);
+
+	playButton.addEventListener("click", function() {
+		if (audioEl.readyState == audioEl.HAVE_NOTHING)
+			return;
+		if (audioEl.paused)
+			audioEl.play();
+		else {
+			audioEl.pause();
+			audioEl.currentTime = 0;
+		}
+	}, false);
+
+	// change the button state when the audio state changes
+	var buttonLabeler = function() {
+		if (audioEl.paused)
+			playButton.value = "Play";
+		else
+			playButton.value = "Stop";
+	};
+	audioEl.addEventListener("play", buttonLabeler, false);
+	audioEl.addEventListener("pause", buttonLabeler, false);
+	audioEl.addEventListener("ended", buttonLabeler, false);
+
+	document.getElementById("updateAudioSource").addEventListener("click", setAudioSource, false);
 	radioChange();
 
+	/* Graph test stuff */
 	var graph1 = {
 			root: document.getElementById('graph1'),
 			toggleButton: document.getElementById('graph1enable'),
@@ -29,7 +85,7 @@ window.addEventListener("load", function() {
 		if (!graph1.created) {
 			graph1.graph = Graph(graph1.root);
 			graph1.graph.setData(new Float32Array(501));
-			graph1.graph.setTitle("Graph Test: Beat Frequency")
+			graph1.graph.setTitle("Graph Test")
 			graph1.graph.setYLabel("Amplitude");
 			graph1.graph.setXLabel("Sample");
 			graph1.created = true;

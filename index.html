@@ -14,10 +14,12 @@
 <div id="main">
 <!-- ############ END HEADER ############ -->
  <h1>Input Source</h1>
+ <audio id="audioEl"></audio>
  <p>Select input audio source.</p>
  <form action="" method="post">
-  <div><input type="radio" id="fileInputRadio" name="sourceType"><span id="fileInputSpan">Choose File: <input type="file" id="fileInput" accept="audio/*"></input></span></div>
+  <div><input type="radio" id="fileInputRadio" name="sourceType"><span id="fileInputSpan">Choose File: <input type="file" id="fileInput" accept="audio/*"></span></div>
   <div><input type="radio" id="genInputRadio" name="sourceType" checked><span id="genInputSpan">Generate signal freq(s) (Hz) <input id="signalFreqs" value="440"> beat freq (BPM) <input id="signalBeats" value="10"></span></div>
+  <div><input type="button" id="updateAudioSource" value="Update Source"><input type="button" id="playButton" value="Play"></div>
  </form>
 
  <h1>Graph Test</h1>
