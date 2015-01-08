@@ -74,6 +74,10 @@ function audioScopeProcess(scopeData, /* AudioProcessingEvent */ ev) {
 	for (var k = 0; k < ev.inputBuffer.numberOfChannels; ++k) // pass-through
 		ev.outputBuffer.getChannelData(k).set(ev.inputBuffer.getChannelData(k));
 	var ch0 = ev.inputBuffer.getChannelData(0);
+	if (ch0.length == 0) {
+		scopeData.kill();
+		return;
+	}
 	var writeTail = scopeData.writeHead + ch0.length;
 	scopeData.scope.data.subarray(scopeData.writeHead, writeTail).set(ch0);
 	scopeData.scope.drawData(scopeData.writeHead, writeTail);
@@ -88,7 +92,15 @@ function setupAudioScope() {
 		audio: null,
 		audioSource: null,
 		audioProcessor: null,
-		writeHead: 0
+		writeHead: 0,
+		kill: function() {
+			if (scopeData.audioSource != null) {
+				scopeData.audioProcessor.disconnect();
+				scopeData.audioSource.disconnect();
+				scopeData.audioSource.stop();
+				scopeData.audioSource = null;
+			}
+		}
 	}
 	scopeData.analyzeButton.addEventListener("click", function() {
 		if (scopeData.scope == null) {
@@ -119,10 +131,7 @@ function setupAudioScope() {
 				scopeData.audioSource.start(0);
 			});
 		} else {
-			scopeData.audioProcessor.disconnect();
-			scopeData.audioSource.disconnect();
-			scopeData.audioSource.stop();
-			scopeData.audioSource = null;
+			scopeData.kill();
 		}
 	}, false);
 }
