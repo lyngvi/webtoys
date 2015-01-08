@@ -298,6 +298,6 @@ function Graph(root) {
 	self.setXLabel("Units (x)");
 	self.setYLabel("Units (y)");
 	self.resize(self.graphContainer.offsetWidth, self.graphContainer.offsetHeight);
-	self.draw();
+	self.drawFrame();
 	return self;
 }

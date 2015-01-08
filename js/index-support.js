@@ -1,24 +1,8 @@
-function getAudioElement() { return document.getElementById("audioEl"); }
 function getAudioFileSelection() {
 	var fileEl = document.getElementById("fileInput");
 	if (fileEl.files.length == 0)
 		return null;
 	return fileEl.files[0];
-}
-
-function setAudioSource(audioEl) {
-	if (document.getElementById("fileInputRadio").checked) {
-		var file = getAudioFileSelection();
-		if (file == null) {
-			alert("Pick a file, dork.");
-			return;
-		}
-		var fr = new FileReader();
-		fr.addEventListener("load", function() { audioEl.setAttribute("src", fr.result); }, false);
-		fr.readAsDataURL(file);
-	} else if (document.getElementById("genInputRadio").checked) {
-		alert("Not yet implemented.");
-	}
 }
 
 function loadSelectedAudioBuffer(audio, onload) {
@@ -36,7 +20,7 @@ function loadSelectedAudioBuffer(audio, onload) {
 }
 
 function onRadioChange() {
-	var sourceRadios = [ "fileInput", "genInput" ];
+	var sourceRadios = [ "fileInput" ]; // , "genInput" ];
 	for (var k = 0; k < sourceRadios.length; ++k) {
 		var span = document.getElementById(sourceRadios[k] + "Span");
 		var cb = document.getElementById(sourceRadios[k] + "Radio");
@@ -46,38 +30,6 @@ function onRadioChange() {
 			span.classList.add("disabled");
 		}
 	}
-}
-
-function onFileSelectionChange() {
-	var audioEl = getAudioElement();
-	var f = getAudioFileSelection();
-	if (f == null)
-		return;
-	document.getElementById("fileInputRadio").checked = true;
-	if (audioEl.readyState != audioEl.HAVE_NOTHING) {
-		audioEl.pause();
-		audioEl.currentTime = 0;
-	}
-	onRadioChange();
-	setAudioSource(audioEl);
-}
-
-function onPlayButtonClick(audioEl) {
-	if (audioEl.readyState == audioEl.HAVE_NOTHING)
-		return;
-	if (audioEl.paused)
-		audioEl.play();
-	else {
-		audioEl.pause();
-		audioEl.currentTime = 0;
-	}
-}
-
-function buttonLabeler(audioEl, button) {
-	if (audioEl.paused)
-		button.value = "Play";
-	else
-		button.value = "Stop";
 }
 
 function setupGraphTest() {
@@ -118,11 +70,25 @@ function setupGraphTest() {
 	});
 }
 
+function audioScopeProcess(scopeData, /* AudioProcessingEvent */ ev) {
+	for (var k = 0; k < ev.inputBuffer.numberOfChannels; ++k) // pass-through
+		ev.outputBuffer.getChannelData(k).set(ev.inputBuffer.getChannelData(k));
+	var ch0 = ev.inputBuffer.getChannelData(0);
+	var writeTail = scopeData.writeHead + ch0.length;
+	scopeData.scope.data.subarray(scopeData.writeHead, writeTail).set(ch0);
+	scopeData.scope.drawData(scopeData.writeHead, writeTail);
+	scopeData.writeHead = writeTail;
+}
+
 function setupAudioScope() {
 	var scopeData = {
 		scope: null,
 		analyzeButton: document.getElementById("analyzeButton"),
-		scopeEl: document.getElementById("scopeGraph")
+		scopeEl: document.getElementById("scopeGraph"),
+		audio: null,
+		audioSource: null,
+		audioProcessor: null,
+		writeHead: 0
 	}
 	scopeData.analyzeButton.addEventListener("click", function() {
 		if (scopeData.scope == null) {
@@ -132,29 +98,31 @@ function setupAudioScope() {
 			scopeData.scope.setTitle("Scope");
 			scopeData.scope.yMin = -1;
 			scopeData.scope.yMax =  1;
-			var audioContext = new AudioContext();
-			var writeHead = 0;
-			loadSelectedAudioBuffer(audioContext, function(/* AudioBuffer */ buffer) {
-				var src = audioContext.createBufferSource();
-				src.buffer = buffer;
+		}
+
+		if (scopeData.audio == null)
+			scopeData.audio = new AudioContext();
+
+		if (scopeData.audioSource == null) {
+			loadSelectedAudioBuffer(scopeData.audio, function(/* AudioBuffer */ buffer) {
+				scopeData.audioSource = scopeData.audio.createBufferSource();
+				scopeData.audioSource.buffer = buffer;
 				scopeData.scope.indexToHumanUnits = function(x) { return x / buffer.sampleRate; };
 				scopeData.scope.setData(new Float32Array(buffer.length));
 				scopeData.scope.drawFrame();
-				var filt = audioContext.createScriptProcessor(1024 /* sample count - should select based on buffer.sampleRate */
+				scopeData.audioProcessor = scopeData.audio.createScriptProcessor(1024 /* sample count - should select based on buffer.sampleRate */
 						, buffer.numberOfChannels, buffer.numberOfChannels);
-				filt.addEventListener("audioprocess", function(/* AudioProcessingEvent */ ev) {
-					for (var k = 0; k < ev.inputBuffer.numberOfChannels; ++k) // pass-through
-						ev.outputBuffer.getChannelData(k).set(ev.inputBuffer.getChannelData(k));
-					var ch0 = ev.inputBuffer.getChannelData(0);
-					var writeTail = writeHead + ch0.length;
-					scopeData.scope.data.subarray(writeHead, writeTail).set(ch0);
-					scopeData.scope.drawData(writeHead, writeTail);
-					writeHead = writeTail;
-				}, false);
-				src.connect(filt);
-				filt.connect(audioContext.destination);
-				src.start(0);
+				scopeData.writeHead = 0;
+				scopeData.audioProcessor.addEventListener("audioprocess", function(/* AudioProcessingEvent */ ev) { audioScopeProcess(scopeData, ev); }, false);
+				scopeData.audioSource.connect(scopeData.audioProcessor);
+				scopeData.audioProcessor.connect(scopeData.audio.destination);
+				scopeData.audioSource.start(0);
 			});
+		} else {
+			scopeData.audioProcessor.disconnect();
+			scopeData.audioSource.disconnect();
+			scopeData.audioSource.stop();
+			scopeData.audioSource = null;
 		}
 	}, false);
 }
@@ -167,24 +135,12 @@ function setupMiscTests() {
 }
 
 window.addEventListener("load", function() {
-	/* various elements we frequently need */
-	var audioEl = document.getElementById("audioEl");
-	var playButton = document.getElementById("playButton");
-
 	document.getElementById("fileInputRadio").addEventListener("change", onRadioChange, false);
-	document.getElementById("genInputRadio").addEventListener("change", onRadioChange, false);
-	document.getElementById("fileInput").addEventListener("change", onFileSelectionChange, false);
-	playButton.addEventListener("click", function() { onPlayButtonClick(audioEl); }, false);
+	// document.getElementById("genInputRadio").addEventListener("change", onRadioChange, false);
 
-	// change the button state when the audio state changes
-	audioEl.addEventListener("play", function() { buttonLabeler(audioEl, playButton); }, false);
-	audioEl.addEventListener("pause", function() { buttonLabeler(audioEl, playButton); }, false);
-	audioEl.addEventListener("ended", function() { buttonLabeler(audioEl, playButton); }, false);
-
-	document.getElementById("updateAudioSource").addEventListener("click", function() { setAudioSource(audioEl); }, false);
 	onRadioChange();
 
-	setupAudioScope(audioEl);
+	setupAudioScope();
 	setupGraphTest();
 	setupMiscTests();
 }, false);
