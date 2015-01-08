@@ -12,11 +12,10 @@ function Graph(root) {
 		data: new Float32Array(10),
 		yMin: null,
 		yMax: null,
-		xMin: null,
-		xMax: null,
+		xMin: null,	// min of x axis (index)
+		xMax: null, // max of x axis (index)
+		indexToHumanUnits: function(x) { return x; }, /* convert x value to human units */
 		yLog: false,
-		title: "Title",
-		samples: 1000,
 
 		/* internal: data is a ring buffer */
 		head: 0,
@@ -176,7 +175,12 @@ function Graph(root) {
 			}
 		},
 
-		drawData: function(ctx, style, extents) {
+		drawData: function(lo, hi, ctx, extents) {
+			if (ctx == null || ctx == undefined)
+				ctx = self.canvas.getContext("2d");
+			if (extents == null || extents == undefined)
+				extents = self.getExtents();
+
 			var mainGraphArea = [ 0, 0
 			  					, self.canvas.width
 			  					, self.canvas.height ];
@@ -185,8 +189,8 @@ function Graph(root) {
 
 			ctx.strokeStyle = "#00FF00";
 			ctx.beginPath();
-			ctx.moveTo(self.xToScreen(0, extents), self.yToScreen(self.data[self.head], extents));
-			for (var k = 1; k < self.data.length; ++k)
+			ctx.moveTo(self.xToScreen(lo, extents), self.yToScreen(self.data[ (lo + self.head) % self.data.length], extents));
+			for (var k = lo + 1; k < hi; ++k)
 				ctx.lineTo(self.xToScreen(k, extents), self.yToScreen(self.data[ (self.head + k) % self.data.length], extents));
 			ctx.stroke();
 		},
@@ -203,23 +207,31 @@ function Graph(root) {
 			self.titleElement.innerHTML = txt;
 		},
 
-		draw: function() {
-			var ctx = self.canvas.getContext("2d");
+		drawFrame: function(ctx, extents) {
 			var style = window.getComputedStyle(self.canvas, null);
-			var extents = self.getExtents();
-			self.yMaxElement.innerHTML = extents.yMax;
-			self.yMinElement.innerHTML = extents.yMin;
-			self.xMaxElement.innerHTML = extents.xMax;
-			self.xMinElement.innerHTML = extents.xMin;
+			if (ctx == undefined || ctx == null)
+				ctx = self.canvas.getContext("2d");
+			if (extents == undefined || extents == null)
+				extents = self.getExtents();
+
+			self.yMaxElement.innerHTML = extents.yMax.toPrecision(3);
+			self.yMinElement.innerHTML = extents.yMin.toPrecision(3);
+			self.xMaxElement.innerHTML = self.indexToHumanUnits(extents.xMax).toPrecision(3);
+			self.xMinElement.innerHTML = self.indexToHumanUnits(extents.xMin).toPrecision(3);
 
 			ctx.fillStyle = style.backgroundColor;
 			ctx.fillRect(0, 0, self.canvas.width, self.canvas.height);
-
 			ctx.fillStyle = style.color;
 			ctx.strokeStyle = style.color;
 			self.drawAxisLabels(ctx, style, extents);
 			self.drawGrid(ctx, style, extents);
-			self.drawData(ctx, style, extents);
+		},
+
+		draw: function() {
+			var ctx = self.canvas.getContext("2d");
+			var extents = self.getExtents();
+			self.drawFrame(ctx, extents);
+			self.drawData(0, self.data.length, ctx, extents);
 		},
 
 		constructHtml: function() {
