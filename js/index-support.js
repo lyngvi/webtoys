@@ -143,6 +143,67 @@ function setupMiscTests() {
 	colorPicker.addEventListener('input', setColor);
 }
 
+function setupClTests() {
+	var clinf = document.getElementById("clinfo");
+	if (clinf == null)
+		return;
+
+	if (!window.webcl) {
+		clinf.innerText = "WebCL not available.";
+		return;
+	}
+
+	var platforms = webcl.getPlatformIDs();
+	var info = "";
+	for (var k = 0; k < platforms.length; ++k) {
+		info += platform.getInfo(webcl.PLATFORM_VENDOR) + " " + platform.getInfo(webcl.PLATFORM_NAME) + "\n"
+			+ "   Version: " + platform.getInfo(webcl.PLATFORM_VERSION) + "\n"
+			+ "   Profile: " + platform.getInfo(webcl.PLATFORM_PROFILE) + "\n"
+			+ "   Extensions:\n" + platform.getInfo(webcl.PLATFORM_PROFILE) + "\n";
+	}
+	clinf.innerText = info;
+}
+
+function setupGlTests() {
+	var glinf = document.getElementById("glinfo");
+	if (glinf == null)
+		return;
+	if (!window.WebGLRenderingContext) {
+		glinf.innerText = "WebGL not available.";
+		return;
+	}
+	var o = {
+		root: glinf,
+		textDiv: document.createElement("div"),
+		canvas: document.createElement("canvas"),
+		context: null
+	};
+	o.root.appendChild(o.textDiv);
+	o.textDiv.id = "gldebuginfo";
+	o.root.appendChild(o.canvas);
+	o.canvas.style.display = 'none';
+
+	var names = [ 'webgl', 'experimental-webgl' ];
+	for (var k = 0; k < names.length; ++k) {
+		o.context = o.canvas.getContext(names[k]);
+		if (o.context != null)
+			break;
+	}
+
+	if (o.context == null) {
+		o.textDiv.innerText = "WebGL available, but getContext('webgl') returns null.";
+		return;
+	}
+
+	o.textDiv.appendChild(document.createTextNode("WebGL Available\n"
+		+ "  Vendor:    " + o.context.getParameter(o.context.VENDOR) + "\n"
+		+ "  Version:   " + o.context.getParameter(o.context.VERSION) + "\n"
+		+ "  SLVersion: " + o.context.getParameter(o.context.SHADING_LANGUAGE_VERSION) + "\n"
+		+ "  Renderer:  " + o.context.getParameter(o.context.RENDERER) + "\n"
+		+ "  Extensions:\n    " + o.context.getSupportedExtensions().join("\n    ")));
+	return o;
+}
+
 window.addEventListener("load", function() {
 	document.getElementById("fileInputRadio").addEventListener("change", onRadioChange, false);
 	// document.getElementById("genInputRadio").addEventListener("change", onRadioChange, false);
@@ -152,4 +213,6 @@ window.addEventListener("load", function() {
 	setupAudioScope();
 	setupGraphTest();
 	setupMiscTests();
+	setupGlTests();
+	setupClTests();
 }, false);
