@@ -35,6 +35,8 @@ function onRadioChange() {
 function setupGraphTest() {
 	var graph1 = {
 			root: document.getElementById('graph1'),
+			fft_mags: document.getElementById('graph_fft_mags'),
+			fft_phases: document.getElementById('graph_fft_phases'),
 			toggleButton: document.getElementById('graph1enable'),
 			newData: new Float32Array(1),
 			created: false,
@@ -44,10 +46,29 @@ function setupGraphTest() {
 	graph1.toggleButton.addEventListener('click', function() {
 		if (!graph1.created) {
 			graph1.graph = Graph(graph1.root);
-			graph1.graph.setData(new Float32Array(501));
+			graph1.graph.setData(new Float32Array(512));
 			graph1.graph.setTitle("Graph Test")
 			graph1.graph.setYLabel("Amplitude");
 			graph1.graph.setXLabel("Sample");
+
+			graph1.fft_graph_mags = Graph(graph1.fft_mags);
+			graph1.fft_graph_mags.indexToHumanUnits = function(x) { return 2.0 * x / graph1.fft_graph_mags.data.length; };
+			graph1.fft_graph_mags.xMax = 256;
+			graph1.fft_graph_mags.setData(new Float32Array(512));
+			graph1.fft_graph_mags.setTitle("Graph Signal FFT: Magnitude")
+			graph1.fft_graph_mags.setYLabel("Magnitude");
+			graph1.fft_graph_mags.setXLabel("Frequency (Ny)");
+
+			if (graph1.fft_phases) {
+				graph1.fft_graph_phases = Graph(graph1.fft_phases);
+				graph1.fft_graph_phases.indexToHumanUnits = function(x) { return 2.0 * x / graph1.fft_graph_phases.data.length; };
+				graph1.fft_graph_phases.xMax = 256;
+				graph1.fft_graph_phases.setData(new Float32Array(512));
+				graph1.fft_graph_phases.setTitle("Graph Signal FFT: Phase")
+				graph1.fft_graph_phases.setYLabel("Phase");
+				graph1.fft_graph_phases.setXLabel("Frequency (Ny)");
+			}
+
 			graph1.created = true;
 		}
 		if (graph1.timeout == null) {
@@ -60,6 +81,14 @@ function setupGraphTest() {
 				graph1.phase += 1;
 				graph1.graph.appendData(graph1.newData);
 				graph1.graph.draw();
+
+				var fft = fft_re1d(graph1.graph.data);
+				graph1.fft_graph_mags.appendData(computeMagSquaredArray(fft));
+				graph1.fft_graph_mags.draw();
+				if (graph1.fft_phases) {
+					graph1.fft_graph_phases.appendData(computePhaseArray(fft));
+					graph1.fft_graph_phases.draw();
+				}
 			}, 20);
 			graph1.toggleButton.setAttribute("value", "Stop the Graph");
 		} else {
@@ -136,11 +165,27 @@ function setupAudioScope() {
 	}, false);
 }
 
+function f32toString(z) {
+	if (z.length == 0)
+		return "[ ]";
+	var out = '[ ';
+	for (var k = 0; k < z.length; ++k)
+		out += z[k].toString() + ", ";
+	return out.substring(0, out.length - 2) + " ]";
+}
+
 function setupMiscTests() {
 	var colorPicker = document.getElementById('bgcolorator');
 	var setColor = function() { document.body.style.backgroundColor = colorPicker.value; };
 	colorPicker.addEventListener('change', setColor);
 	colorPicker.addEventListener('input', setColor);
+
+	var arr = new Float32Array(10);
+	var subarr = arr.subarray(1, 3);
+	subarr[0] = -9.0;
+	subarr[1] = -12.0;
+	arr[5] = -33.0;
+	document.getElementById("subarrtest").innerText = "arr: " + f32toString(arr) + "; subarr: " + f32toString(subarr);
 }
 
 function setupClTests() {
@@ -204,6 +249,24 @@ function setupGlTests() {
 	return o;
 }
 
+function setupComplexTests() {
+	var el = document.getElementById("complextest");
+	if (el == null)
+		return;
+
+	var a = complex.from_real_imag(2.0, -3.0), b = complex.from_real_imag(4.0, 5.0);
+	el.innerText = '';
+	el.innerText += "a: " + a.toString() + "\n" +
+			"b: " + b.toString() + "\n";
+	el.innerText += "a * b: " + a.copy().multiply(b).toString() + "\n";
+	el.innerText += "a.mag_squared(): " + a.mag_squared().toString() + "\n";
+	el.innerText += "a.conjugate(): " + a.conjugate().toString() + "\n";
+	el.innerText += "a / b: " + a.copy().divide(b).toString() + "\n";
+	el.innerText += "5 * a: " + a.copy().scale(5.0).toString() + "\n";
+	el.innerText += "a.mag(), a.phase(): " + a.mag().toString() + ", " + a.phase().toString() + "\n";
+	el.innerText += "a.re(), a.im(): " + a.re().toString() + ", " + a.im().toString() + "\n";
+}
+
 window.addEventListener("load", function() {
 	document.getElementById("fileInputRadio").addEventListener("change", onRadioChange, false);
 	// document.getElementById("genInputRadio").addEventListener("change", onRadioChange, false);
@@ -215,4 +278,5 @@ window.addEventListener("load", function() {
 	setupMiscTests();
 	setupGlTests();
 	setupClTests();
+	setupComplexTests();
 }, false);

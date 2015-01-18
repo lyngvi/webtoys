@@ -5,6 +5,8 @@
     <title>HTML5 Toys</title>
     <link rel="stylesheet" type="text/css" href="css/style.css" />
     <link rel="stylesheet" type="text/css" href="css/graph.css" />
+    <script type="text/javascript" src="js/complex.js"></script>
+    <script type="text/javascript" src="js/fft.js"></script>
     <script type="text/javascript" src="js/graph.js"></script>
     <script type="text/javascript" src="js/index-support.js"></script>
   </head>
@@ -25,10 +27,13 @@
  <h1>Graph Test</h1>
  <input type="button" value="Test the Graph!" id="graph1enable">
  <div id="graph1"></div>
+ <div id="graph_fft_mags"></div>
+ <!-- useless for now <div id="graph_fft_phases"></div>  -->
 
  <h1>Scope Test</h1>
  <p>Test the scope. Yeah... not there yet.</p>
  <div id="scope1"></div>
+
  <h1>Miscellaneous Tests</h1>
  <p>Just some entry points for test code.</p>
  <form action="" method="post">
@@ -36,12 +41,16 @@
   <div>Enter a Time: <input type="time"></div>
   <div>Enter a Color: <input id="bgcolorator" type="color" value="#ffffff"></div>
  </form>
+ <div>Subarray test: <div id="subarrtest"></div></div>
 
  <h1>GL Test</h1>
  <div id="glinfo"></div>
 
  <h1>CL Test</h1>
  <div id="clinfo"></div>
+
+ <h1>Complex Test</h1>
+ <div id="complextest"></div>
 <!-- ############ BEGIN FOOTER ############ -->
 </div>
   </body>
